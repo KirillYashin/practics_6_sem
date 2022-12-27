@@ -86,7 +86,7 @@ class Window(QWidget):
         # self.path.quadTo(cp1, points[-1])
 
     def draw(self, cnt):
-        self.image.fill(Qt.white)
+        # self.image.fill(Qt.white)
         painter = QPainter(self.image)
         pen = QPen()
         pen.setColor(QColor().fromRgb(135, 135, 135))
@@ -99,7 +99,7 @@ class Window(QWidget):
         pen = QPen()
         pen.setColor(QColor().fromRgb(155, 155, 155))
         pen.setCapStyle(Qt.RoundCap)
-        pen.setWidth(30)
+        pen.setWidth(20)
         painter.setPen(pen)
         painter.drawPath(self.path)
         self.update()
@@ -108,19 +108,21 @@ class Window(QWidget):
         self.save_image(cnt)
 
     def save_image(self, cnt):
-        directory = os.getcwd()
+        directory = os.path.join(os.getcwd(), 'lines')
         file_name = f'line_{cnt}'
         if file_name:
             path = os.path.join(directory, file_name + '.png')
-            scaled_image = self.image.scaled(50, 50)
-            scaled_image.save(path)
+            # scaled_image = self.image.scaled(50, 50)
+            pixmap = QPixmap(self.image)
+            pixmap.setMask(pixmap.createHeuristicMask(Qt.transparent))
+            pixmap.save(path)
 
 
-if __name__ == '__main__':
-    App = QApplication(sys.argv)
+def generate_line(cnt):
+    # app = QApplication(sys.argv)
     window = Window()
-    for i in range(10):
-        points = points_generator(70, 70, 4)
-        window.build_path(points)
-        window.draw(i)
-    sys.exit(App.exit(0))
+    points = points_generator(70, 70, 4)
+    window.build_path(points)
+    window.draw(cnt)
+
+    # sys.exit(app.exit(0))

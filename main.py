@@ -9,6 +9,7 @@ import random
 import math
 import itertools
 import cv2
+import line
 
 
 def build_path(points):
@@ -95,6 +96,7 @@ class Window(QMainWindow):
         self.filled_space = set()
         self.max_x, self.max_y = -1, -1
         self.min_x, self.min_y = 501, 496
+        self.center_x, self.center_y = -1, -1
         self.full_dark_color = QColor().fromRgb(10, 10, 10)
         self.dark_color = QColor().fromRgb(135, 135, 135)
         self.light_color = QColor().fromRgb(155, 155, 155)
@@ -109,7 +111,9 @@ class Window(QMainWindow):
         painter.drawImage(QRect(0, 0, self.width, self.height), self.image)
 
     def draw_mitochondrion_boundaries(self):
-        self.bounds_points = points_generator(random.randint(25, 475), random.randint(25, 475), 10)
+        self.center_x = random.randint(25, 475)
+        self.center_y = random.randint(25, 475)
+        self.bounds_points = points_generator(self.center_x, self.center_y, 10)
         self.max_x, self.max_y = -1, -1
         self.min_x, self.min_y = 501, 496
         for point in self.bounds_points:
@@ -132,6 +136,16 @@ class Window(QMainWindow):
         painter.setPen(QPen(self.dark_color, 2))
         path.moveTo(self.bounds_points[0])
         painter.drawPath(path)
+        left_upper = QPoint(self.min_x, self.min_y)
+        left_lower = QPoint(self.min_x, self.max_y)
+        right_upper = QPoint(self.max_x, self.min_y)
+        right_lower = QPoint(self.max_x, self.max_y)
+        # painter.drawRect(self.min_x, self.min_y, int(self.max_x - self.min_x), int(self.max_y - self.min_y))
+        painter.setBrush((QBrush(Qt.red)))
+        painter.drawLine(left_upper, left_lower)
+        painter.drawLine(left_lower, right_lower)
+        painter.drawLine(right_lower, right_upper)
+        painter.drawLine(right_upper, left_upper)
         # uncomment for double line
         '''painter.setPen(QPen(self.light_color, 4))
         path.moveTo(self.bounds_points[0])
@@ -196,10 +210,39 @@ class Window(QMainWindow):
         self.update()
         self.save_image('no_background')
 
+    def lay_lines(self, cnt):
+        painter = QPainter(self.image)
+        for i in range(cnt):
+            line.generate_line(i)
+
+        for i in range(cnt):
+            # x_rand = random.randint(self.min_x, self.max_x)
+            # y_rand = random.randint(self.min_y, self.max_y)
+            x_rand = random.randint(0,  int(self.max_x - self.min_x)) + self.min_x
+            y_rand = random.randint(0,  int(self.max_y - self.min_y)) + self.min_y
+            # print(x_rand, y_rand)
+            directory = os.path.join(os.getcwd(), 'lines')
+            file_name = f'line_{i}'
+            path = os.path.join(directory, file_name + '.png')
+            scale_size = random.randint(20, 30)
+            line_pixmap = QPixmap(path).scaled(scale_size, scale_size)
+            rotated_pixmap = line_pixmap.transformed(QTransform().rotate(random.randint(0, 180)), Qt.FastTransformation)
+            painter.drawPixmap(x_rand - scale_size // 2, y_rand - scale_size // 2, rotated_pixmap)
+        for x in range(500):
+            for y in range(495):
+                if self.mask_image.pixelColor(x, y) == Qt.white \
+                    and ((self.image.pixelColor(x, y) == self.dark_color)
+                         or (self.image.pixelColor(x, y) == self.light_color)):
+                    painter.setPen(QPen(Qt.white))
+                    painter.drawPoint(x, y)
+        self.update()
+        self.save_image('test')
+
     def draw_mitochondrion(self, cnt, dots_cnt, curves_cnt, low, middle, high):
         for _ in range(cnt):
             self.draw_mitochondrion_boundaries()
-            self.draw_mitochondrion_insides(dots_cnt, curves_cnt)
+            # self.draw_mitochondrion_insides(dots_cnt, curves_cnt)
+            self.lay_lines(40)
         self.lay_background(low, middle, high)
         self.init_window()
 
@@ -253,7 +296,7 @@ if __name__ == '__main__':
     # semi dark - 25, 90, 190
     # semi light - 70, 140, 195
     # light - 130, 150, 195
-    window.draw_mitochondrion(1, 5, 60, 10, 50, 200)
+    window.draw_mitochondrion(1, 0, 0, 10, 50, 200)
     # window.draw_mitochondrion(m_cnt, e_cnt, c_cnt, colors[0], colors[1], colors[2])
     image = cv2.imread('mitochondrion_background.png')
     img_blur = cv2.GaussianBlur(image, (5, 5), 0)
