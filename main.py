@@ -93,18 +93,6 @@ class Window(QMainWindow):
 
     def draw_mitochondrion_boundaries(self):
         painter = QPainter(self.image)
-        '''line.generate_line()
-        directory = os.path.join(os.getcwd(), 'lines')
-        file_name = f'line_{0}'
-        filepath = os.path.join(directory, file_name + '.png')
-        line_pixmap = QPixmap(filepath).scaled(250, 250)
-        rotation = 0
-        rotated_pixmap = line_pixmap.transformed(QTransform().rotate(rotation), Qt.FastTransformation)
-        brush = QtGui.QBrush()
-        brush.setTexture(rotated_pixmap)
-        painter.setBrush(brush)
-        painter.drawRect(QRect(QPoint(-1, -1), QPoint(500, 495)))
-        self.save_image('12313')'''
 
         self.center_x = random.randint(25, 475)
         self.center_y = random.randint(25, 475)
@@ -139,53 +127,21 @@ class Window(QMainWindow):
         painter.drawPath(path)
         self.update()
 
-    def lay_lines(self, cnt, common_rotation, common_length):
-        painter = QPainter(self.image)
-        for i in range(cnt):
-            line.generate_line()
-
-        group_center_x = random.randint(0, int(self.max_x - self.min_x)) + self.min_x
-        group_center_y = random.randint(0, int(self.max_y - self.min_y)) + self.min_y
-        for i in range(cnt):
-            # x_rand = random.randint(self.min_x, self.max_x)
-            # y_rand = random.randint(self.min_y, self.max_y)
-            x_rand = random.randint(group_center_x - 20, group_center_x + 20)
-            y_rand = random.randint(group_center_y - 20, group_center_y + 20)
-            # print(x_rand, y_rand)
-            directory = os.path.join(os.getcwd(), 'lines')
-            file_name = f'line_{1}'
-            path = os.path.join(directory, file_name + '.png')
-            scale_size = random.randint(40, 120)
-            # rotation = common_rotation + random.randint(-5, 5)\
-            rotation = 0
-            line_pixmap = QPixmap(path)
-            rotated_pixmap = line_pixmap.transformed(QTransform().rotate(rotation), Qt.FastTransformation)
-            painter.drawPixmap(x_rand, y_rand,
-                               rotated_pixmap)
-        for x in range(500):
-            for y in range(495):
-                if self.mask_image.pixelColor(x, y) == Qt.white:
-                    painter.setPen(QPen(Qt.white))
-                    painter.drawPoint(x, y)
-                if self.mask_image.pixelColor(x, y) == self.dark_color:
-                    painter.setPen(self.dark_color)
-                    painter.drawPoint(x, y)
-        self.update()
-        self.save_image('test')
-
-    def draw_mitochondrion(self, low, middle, high):
+    def draw_mitochondrion(self, number):
         self.draw_mitochondrion_boundaries()
         painter = QPainter(self.image)
-        line.generate_line()
+        line.generate_line(number)
         directory = os.path.join(os.getcwd(), 'lines')
         file_name = f'line_{0}'
         path = os.path.join(directory, file_name + '.png')
-        rotation = random.randint(0, 90)
-        scale_size = 200
+        rotation = random.randint(-90, 90)
+        scale_size = max(self.max_x - self.min_x, self.max_y - self.min_y)
         line_pixmap = QPixmap(path).scaled(scale_size, scale_size)
         rotated_pixmap = line_pixmap.transformed(QTransform().rotate(rotation), Qt.FastTransformation)
-        painter.drawPixmap(int(self.min_x - 50),
-                           int(self.min_y - 50),
+        if abs(rotation) > 45:
+            rotation = 90 - abs(rotation)
+        painter.drawPixmap(int(self.min_x - 30 * math.tan(math.radians(abs(rotation)))),
+                           int(self.min_y - 30 * math.tan(math.radians(abs(rotation)))),
                            rotated_pixmap)
         for x in range(500):
             for y in range(495):
@@ -197,7 +153,7 @@ class Window(QMainWindow):
                     painter.drawPoint(x, y)
         self.update()
         self.save_image('test')
-        self.lay_background(low, middle, high)
+        self.lay_background()
 
     def save_image(self, name):
         directory = os.getcwd()
@@ -206,54 +162,26 @@ class Window(QMainWindow):
             path = os.path.join(directory, file_name + '.png')
             self.image.save(path)
 
-    def lay_background(self, low, middle, high):
+    def lay_background(self):
         background = QImage('background.jpg')
         for x in range(500):
             for y in range(495):
                 if self.mask_image.pixelColor(x, y) == Qt.white:
                     self.image.setPixelColor(x, y, background.pixelColor(x, y))
-                '''if self.image.pixelColor(x, y) == self.dark_color:
-                    random_color = random.randint(low, middle + 1)
-                    color = QColor()
-                    color.setRgb(random_color, random_color, random_color)
-                    self.image.setPixelColor(x, y, color)
-                if self.image.pixelColor(x, y) == self.light_color:
-                    random_color = random.randint(middle + 1, high + 1)
-                    color = QColor()
-                    color.setRgb(random_color, random_color, random_color)
-                    self.image.setPixelColor(x, y, color)'''
         self.update()
         self.save_image('background')
 
 
 if __name__ == '__main__':
     App = QApplication(sys.argv)
-    # window = Window()
-    # dark - 10, 50, 200
-    # semi dark - 25, 90, 190
-    # semi light - 70, 140, 195
-    # light - 130, 150, 195
     for i in range(50):
         window = Window()
-        colours = [0, 0, 0]
-        colour_choice = random.randint(0, 3)
-        if colour_choice == 0:
-            colours = [10, 50, 200]
-        if colour_choice == 1:
-            colours = [25, 90, 190]
-        if colour_choice == 2:
-            colours = [70, 140, 195]
-        if colour_choice == 3:
-            colours = [130, 150, 195]
-        window.draw_mitochondrion(colours[0], colours[1], colours[2])
-        # window.draw_mitochondrion(m_cnt, e_cnt, c_cnt, colors[0], colors[1], colors[2])
+        window.draw_mitochondrion(i)
         image = cv2.imread('mitochondrion_background.png')
         img_blur = cv2.GaussianBlur(image, (5, 5), 0)
         img_gray = cv2.cvtColor(img_blur, cv2.COLOR_BGR2GRAY)
         height, width = img_gray.shape
         noisy = img_gray + np.random.poisson(np.ones((height, width), np.uint8)) * 15 - 15
-        # cv2.imshow('img', img_blur)
-        # cv2.waitKey(0)
         filename = os.path.join('examples', f'mitochondrion_{i}')
         cv2.imwrite(os.path.join(os.getcwd(), filename + '.png'), noisy)
         print(f'{i} ready')

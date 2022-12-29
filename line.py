@@ -6,7 +6,6 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import sys
 import random
-import math
 
 
 def points_generator(centre_x, centre_y, points_num):
@@ -87,7 +86,7 @@ class Window(QWidget):
         # self.path.quadTo(cp1, points[-1])
 
     def draw(self, cnt):
-        width = random.randint(22, 28)
+        width = random.randint(36, 44)
         painter = QPainter(self.image)
         pen = QPen()
         pen.setColor(QColor().fromRgb(135, 135, 135))
@@ -100,13 +99,12 @@ class Window(QWidget):
         pen = QPen()
         pen.setColor(QColor().fromRgb(195, 195, 195))
         pen.setCapStyle(Qt.RoundCap)
-        pen.setWidth(width - random.randint(12, 16))
+        pen.setWidth(width - random.randint(22, 28))
         painter.setPen(pen)
         painter.drawPath(self.path)
         self.update()
 
         self.init_window()
-        # self.crop_image()
         self.save_image(cnt)
 
     def save_image(self, cnt):
@@ -114,51 +112,33 @@ class Window(QWidget):
         file_name = f'line_{cnt}'
         if file_name:
             path = os.path.join(directory, file_name + '.png')
-            # scaled_image = self.image.scaled(50, 50)
             pixmap = QPixmap(self.image)
             # pixmap.setMask(pixmap.createHeuristicMask(Qt.transparent))
             pixmap.save(path)
 
-    def crop_image(self):
-        max_x, max_y = -1, -1
-        min_x, min_y = 201, 201
-        for x in range(200):
-            for y in range(200):
-                if self.image.pixelColor(x, y) == QColor().fromRgb(135, 135, 135):
-                    max_x = max(max_x, x)
-                    max_y = max(max_y, y)
-                    min_x = min(min_x, x)
-                    min_y = min(min_y, y)
-        rect = QRect(QPoint(min_x, min_y), QPoint(max_x, max_y))
-        self.cropped_image = self.image.copy(rect)
-        return max_x, max_y, min_x, min_y
 
-
-def generate_line():
+def generate_line(number):
     window = Window()
     offset = 15
     points_x = []
     points_y = []
     for j in range(8):
-        '''for i in range(3):
-            points_x.append(random.randint(i * (500 // 3) + 10, (i + 1) * (500 // 3) - offset))'''
         points_x.append(random.randint(20, 40))
         points_x.append(random.randint(135, 155))
         points_x.append(random.randint(260, 280))
         points_x.append(random.randint(385, 405))
         for i in range(4):
-            points_y.append(random.randint(j * (500 // 8) + 20, (j + 1) * (500 // 8) - 20))
-    '''points_x = random.sample([k for k in range(0, 300)], 50)
-    points_y = random.sample([k for k in range(0, 300)], 50)
-    coord = set()
-    for i in range(50):
-        coord.add((points_x[i], points_y[i]))
-    print(len(coord))'''
+            percentage = random.randint(0, 100)
+            if percentage > 50:
+                points_y.append(random.randint(j * (500 // 8) + 20, (j + 1) * (500 // 8) - 20))
+            else:
+                points_y.append(-1)
     for i in range(32):
-        # points_y = random.sample([k for k in range(0 + 50 * i, 50 * (i + 1), 5)], 70)
-        points = points_generator(points_x[i], points_y[i], random.randint(2, 4))
+        if points_y[i] == -1:
+            continue
+        points = points_generator(points_x[i], points_y[i], random.randint(1, 4))
         window.build_path(points)
-        window.draw(0)
+        window.draw(number)
 
 
 if __name__ == '__main__':
@@ -168,25 +148,22 @@ if __name__ == '__main__':
     points_x = []
     points_y = []
     for j in range(8):
-        '''for i in range(3):
-            points_x.append(random.randint(i * (500 // 3) + 10, (i + 1) * (500 // 3) - offset))'''
         points_x.append(random.randint(20, 40))
         points_x.append(random.randint(135, 155))
         points_x.append(random.randint(260, 280))
         points_x.append(random.randint(385, 405))
         for i in range(4):
-            points_y.append(random.randint(j * (500 // 8) + 20, (j + 1) * (500 // 8) - 20))
+            percentage = random.randint(0, 100)
+            if percentage > 40:
+                points_y.append(random.randint(j * (500 // 8) + 20, (j + 1) * (500 // 8) - 20))
+            else:
+                points_y.append(-1)
     print(points_x)
     print(points_y)
-    '''points_x = random.sample([k for k in range(0, 300)], 50)
-    points_y = random.sample([k for k in range(0, 300)], 50)
-    coord = set()
-    for i in range(50):
-        coord.add((points_x[i], points_y[i]))
-    print(len(coord))'''
     for i in range(32):
-        # points_y = random.sample([k for k in range(0 + 50 * i, 50 * (i + 1), 5)], 70)
-        points = points_generator(points_x[i], points_y[i], random.randint(2, 4))
+        if points_y[i] == -1:
+            continue
+        points = points_generator(points_x[i], points_y[i], random.randint(1, 4))
         window.build_path(points)
         window.draw(0)
 

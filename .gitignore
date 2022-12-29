@@ -1,5 +1,6 @@
 .idea/
+__pycache__/
 *.png
 *.jpg
 *.svg
-__pycache__/
+*.zip
